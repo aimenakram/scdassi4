@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Load the dataset
 @st.cache
 def load_data():
-    iris = sns.load_dataset('iris')
+    iris = pd.read_csv('iris.csv')
     return iris
 
 iris = load_data()
@@ -30,18 +30,31 @@ plot_type = st.sidebar.selectbox("Select Plot Type", ['Histogram', 'Boxplot', 'S
 if plot_type == 'Histogram':
     selected_feature = st.sidebar.selectbox("Select Feature", iris.columns[:-1])
     st.subheader("Histogram")
-    sns.histplot(data=filtered_data, x=selected_feature, hue='species', kde=True)
+    for species in filtered_data['species'].unique():
+        species_data = filtered_data[filtered_data['species'] == species]
+        plt.hist(species_data[selected_feature], bins=10, alpha=0.5, label=species)
+    plt.xlabel(selected_feature)
+    plt.ylabel("Count")
+    plt.legend()
     st.pyplot()
 
 elif plot_type == 'Boxplot':
     selected_feature = st.sidebar.selectbox("Select Feature", iris.columns[:-1])
     st.subheader("Boxplot")
-    sns.boxplot(data=filtered_data, x='species', y=selected_feature)
+    plt.boxplot([filtered_data[filtered_data['species'] == species][selected_feature] for species in filtered_data['species'].unique()],
+                labels=filtered_data['species'].unique())
+    plt.xlabel("Species")
+    plt.ylabel(selected_feature)
     st.pyplot()
 
 elif plot_type == 'Scatterplot':
     x_feature = st.sidebar.selectbox("Select X-axis Feature", iris.columns[:-1])
     y_feature = st.sidebar.selectbox("Select Y-axis Feature", iris.columns[:-1])
     st.subheader("Scatterplot")
-    sns.scatterplot(data=filtered_data, x=x_feature, y=y_feature, hue='species')
+    for species in filtered_data['species'].unique():
+        species_data = filtered_data[filtered_data['species'] == species]
+        plt.scatter(species_data[x_feature], species_data[y_feature], label=species)
+    plt.xlabel(x_feature)
+    plt.ylabel(y_feature)
+    plt.legend()
     st.pyplot()
